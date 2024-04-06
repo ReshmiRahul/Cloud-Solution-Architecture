@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Book</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="styles.css"> <!-- Link to your custom CSS file for additional styling -->
+    <style>
+        .edit-box {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .edit-book-heading {
+            font-weight: bold;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .menu-tab {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-tab a {
+            color: #333;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        .menu-logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-logo img {
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        .menu-logo h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background-image: url('Images/loginbk.webp');
+            background-size: cover;
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+    </style>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.966.0.min.js"></script>
+
+</head>
+
+<body>
+    <div class="container-fluid menu-tab">
+        <div class="menu-logo">
+            <img src="Images/icon.png" alt="Logo">
+            <h1>Bookmaniac</h1>
+        </div>
+        <div>
+            <a href="view_book.html">View Book</a>
+            <a href="login.html">Logout</a>
+        </div>
+    </div>
+    <div class="container mt-4">
+        <div class="edit-box">
+            <h2 class="text-center mb-4 edit-book-heading">Edit Book</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <form id="editForm">
+                        <div class="form-group">
+                            <label for="title">Title:</label>
+                            <input type="text" class="form-control" id="title" placeholder="Enter book title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="authors">Authors:</label>
+                            <input type="text" class="form-control" id="authors" placeholder="Enter author(s)" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <form>
+                        <div class="form-group">
+                            <label for="publisher">Publisher:</label>
+                            <input type="text" class="form-control" id="publisher" placeholder="Enter publisher"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="year">Year:</label>
+                            <input type="number" class="form-control" id="year" placeholder="Enter publication year"
+                                required>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6 offset-md-3 d-flex justify-content-between">
+                    <button type="button" id="saveBtn" class="btn btn-primary btn-small">Save</button>
+                    <button type="button" id="cancelBtn" class="btn btn-secondary btn-small ml-2">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to extract URL parameter by name
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+        // Initialize AWS SDK
+        AWS.config.update({
+            region: 'us-east-1', // Replace with your AWS region
+            accessKeyId: 'ASIAZQ3DTSY23QMBQA3C', // Replace with your AWS access key ID
+            secretAccessKey: 'B4VINZRLNDgXNHeaSZcIOZ32OE6NxgEtq2MOKBLe', // Replace with your AWS secret access key,
+            sessionToken: 'FwoGZXIvYXdzEKL//////////wEaDADnXmAHM7IVXy7n2iK+AcSHeMBqR4Xk2pM/ZiauElYib3AVlcvy022aR76KpOHSlpkJgpNKKHwhuYs3cc74rW/YNM2GXkvzMR4xaqagGyCxvj7y99IY3RAWOuqAXjU1yvEM3Dsv1QrsXZ6g1lqoZvhC96jqa4Ii5xvebHjfHDjeqkCP2WQ7uieNSgj7asVT6LSC/Yd+X5Q8Y+1LVfHI5xLcn7pQ3BIO2S2SEKvalXBFxP9ePpioF000sYoZtXIGAyP2UzGBNATw9z6d0qYov/2LsAYyLUEnn2wKw6ccU8rLe8C2a8DyUBlX5IVvoOQakZpx/IIenYZFpIO0sB8DCoblHQ=='
+        });
+
+        // Create DynamoDB client
+        var dynamodb = new AWS.DynamoDB();
+
+        // Fetch book details based on ID from URL parameter
+        // Fetch book details based on title from URL parameter
+        // Fetch book details based on title from URL parameter
+        function fetchBookDetails() {
+            var bookTitle = getParameterByName('title'); // Get the book title from URL parameter
+
+            // Check if bookTitle is not null or empty
+            if (bookTitle) {
+                // Define DynamoDB params to get the specific book details by its title
+                var params = {
+                    TableName: 'bookmaniac-db', // Replace with your DynamoDB table name
+                    KeyConditionExpression: "Title = :title",
+                    ExpressionAttributeValues: {
+                        ":title": { "S": bookTitle } // Assuming the title is stored as a String type in DynamoDB
+                    }
+                };
+
+                // Call DynamoDB to get the book details
+                dynamodb.query(params, function (err, data) {
+                    if (err) {
+                        console.error("Unable to fetch book details:", err);
+                    } else {
+                        var bookDetails = data.Items[0]; // Assuming there's only one book with the given title
+                        if (bookDetails) {
+                            // Populate the form fields with the fetched book details
+                            document.getElementById('title').value = bookDetails.Title.S;
+                            document.getElementById('authors').value = bookDetails.Authors.S;
+                            document.getElementById('publisher').value = bookDetails.Publisher.S;
+                            document.getElementById('year').value = parseInt(bookDetails.Year.N); // Assuming Year is stored as a Number type
+                        } else {
+                            console.error("Book with the specified title not found.");
+                        }
+                    }
+                });
+            } else {
+                console.error("Book title not found in URL parameters.");
+            }
+        }
+
+
+        fetchBookDetails();
+        document.getElementById('cancelBtn').addEventListener('click', function () {
+            // Redirect to view_book.html
+            window.location.href = 'view_book.html';
+            // Display alert message
+            alert('Changes will not be saved.');
+        });
+
+    </script>
+
+
+</body>
+
+</html>

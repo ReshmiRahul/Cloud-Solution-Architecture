@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Book</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="styles.css"> <!-- Link to your custom CSS file for additional styling -->
+    <style>
+        .edit-box {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .edit-book-heading {
+            font-weight: bold;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .menu-tab {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-tab a {
+            color: #333;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        .menu-logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-logo img {
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        .menu-logo h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background-image: url('Images/loginbk.webp');
+            background-size: cover;
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+    </style>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.966.0.min.js"></script>
+
+</head>
+
+<body>
+    <div class="container-fluid menu-tab">
+        <div class="menu-logo">
+            <img src="Images/icon.png" alt="Logo">
+            <h1>Bookmaniac</h1>
+        </div>
+        <div>
+            <a href="view_book.html">View Book</a>
+            <a
+                href="https://brs-bookmaniac-login.auth.us-east-1.amazoncognito.com/login?client_id=5anmt25o8cqml90jui8s52k27t&response_type=token&scope=email+openid+phone&redirect_uri=https%3A%2F%2Fbookmaniac-bucket.s3.amazonaws.com%2Fview_book.html ">Logout</a>
+        </div>
+    </div>
+    <div class="container mt-4">
+        <div class="edit-box">
+            <h2 class="text-center mb-4 edit-book-heading">Edit Book</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <form id="editForm">
+                        <div class="form-group">
+                            <label for="title">Title:</label>
+                            <input type="text" class="form-control" id="title" placeholder="Enter book title" disabled
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="authors">Authors:</label>
+                            <input type="text" class="form-control" id="authors" placeholder="Enter author(s)" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <form>
+                        <div class="form-group">
+                            <label for="publisher">Publisher:</label>
+                            <input type="text" class="form-control" id="publisher" placeholder="Enter publisher"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="year">Year:</label>
+                            <input type="number" class="form-control" id="year" placeholder="Enter publication year"
+                                required>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6 offset-md-3 d-flex justify-content-between">
+                    <button type="button" id="saveBtn" class="btn btn-primary btn-small">Save</button>
+                    <button type="button" id="cancelBtn" class="btn btn-secondary btn-small ml-2">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to extract URL parameter by name
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+        function fetchBookDetails() {
+            var bookData = getParameterByName('book'); // Get the book title from URL parameter
+            var bookDetails = JSON.parse(bookData);
+            if (bookDetails) {
+                // Populate the form fields with the fetched book details
+                document.getElementById('title').value = bookDetails.Title;
+                document.getElementById('authors').value = bookDetails.Authors;
+                document.getElementById('publisher').value = bookDetails.Publisher;
+                document.getElementById('year').value = parseInt(bookDetails.Years); // Assuming Year is stored as a Number type
+            } else {
+                console.error("Book with the specified title not found.");
+            }
+        }
+
+        fetchBookDetails();
+        document.getElementById('saveBtn').addEventListener('click', function () {
+            var bookData = getParameterByName('book'); // Get the book title from URL parameter
+            var bookDetails = JSON.parse(bookData);
+
+            // Construct the URL
+            var apiUrl = "https://03gpyl7xs6.execute-api.us-east-1.amazonaws.com/test_stage/bookmaniac/update?title=" + encodeURIComponent(bookDetails.Title) + "&authors=" + encodeURIComponent(bookDetails.Authors) + "&publisher=" + encodeURIComponent(bookDetails.Publisher) + "&years=" + encodeURIComponent(bookDetails.Years);
+
+            // Log the constructed URL
+            console.log("Constructed URL:", apiUrl);
+
+            // Make the AJAX request
+            $.ajax({
+                type: "PUT",
+                url: apiUrl,
+                contentType: "application/json",
+                success: function (response) {
+                    console.log(response);
+                    // Handle success response
+                },
+                error: function (error) {
+                    console.error(error);
+                    // Handle error response
+                }
+            });
+        });
+
+
+        document.getElementById('cancelBtn').addEventListener('click', function () {
+            // Redirect to view_book.html
+            window.location.href = 'view_book.html';
+            // Display alert message
+            alert('Changes will not be saved.');
+        });
+
+    </script>
+
+
+</body>
+
+</html>

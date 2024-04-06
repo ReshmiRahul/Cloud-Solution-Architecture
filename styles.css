@@ -1,0 +1,91 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: url('Images/loginbk.webp'); /* Relative path to the image file */
+    background-size: cover;
+    background-position: center;
+}
+
+.login-container {
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+    max-width: 350px; /* Increase the maximum width */
+    width: 500%; /* Set width to a specific value larger than 100% */
+    text-align: center; /* Center align content */
+}
+
+
+.bookmania-text {
+    background-image: url('Images/loginbk.webp'); /* Background image */
+    background-size: cover; /* Cover the entire text */
+    background-clip: text; /* Clip the text to be visible only where the background image is present */
+    -webkit-background-clip: text; /* For webkit-based browsers */
+    color: transparent; /* Make the text transparent */
+    display: inline-block; /* Display as inline block */
+    padding: 0.1em 0; /* Add some padding */
+    margin: 0; /* Reset margin */
+    font-family: 'Oswald', sans-serif; /* Apply Oswald font */
+    font-size: 45px; /* Adjust font size as needed */
+    font-weight: bold; /* Optionally, set font weight */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); /* Add shadow effect */
+    margin-left: 10px; /* Add margin to separate text from logo */
+    letter-spacing: px; /* Adjust letter spacing to stretch the text */
+}
+
+
+
+
+.logo {
+    height: 90px; /* Adjust logo height as needed */
+}
+
+
+h2 {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px; /* Increased spacing between form elements */
+    text-align: left; /* Align labels and inputs to the left */
+}
+
+label {
+    font-weight: bold;
+    display: block; /* Ensure labels are displayed as blocks for proper spacing */
+}
+
+input[type="text"],
+input[type="password"] {
+    width: calc(100% - 22px); /* Adjust input width to account for padding and border */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    width: 100%;
+    padding: 12px; /* Increased button padding for better clickability */
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.error-message {
+    color: red;
+    margin-top: 5px; /* Add some spacing between error message and form */
+}
+

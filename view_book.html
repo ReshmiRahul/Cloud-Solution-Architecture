@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Books</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="styles.css"> <!-- Link to your custom CSS file for additional styling -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.966.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        .header {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .menu-tab {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-logo img {
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        .menu-logo h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: transparent;
+            background-image: url('Images/loginbk.webp');
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .view-box {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+            max-width: 1200px;
+            width: 100%;
+            margin: 1200px auto 20px;
+            /* Added extra margin to the top */
+        }
+
+        .view-book-heading {
+            font-weight: bold;
+        }
+
+        .book-card {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .book-img {
+            height: 250px; /* Fixed height */
+            width: auto; /* Maintain aspect ratio */
+            border-radius: 10px 10px 0 0;
+        }
+
+        .book-details {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            background-color: #f8f9fa;
+        }
+
+        .book-title {
+            font-weight: bold;
+        }
+
+        .edit-btn,
+        .delete-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.75rem;
+            width: 60px;
+            padding: 0.2rem 0.5rem;
+        }
+
+        .edit-btn {
+            right: calc(10px + 70px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="container-fluid menu-tab">
+            <div class="menu-logo">
+                <img src="Images/icon.png" alt="Logo">
+                <h1>Bookmaniac</h1>
+            </div>
+            <div>
+                <a href="add_book.html">Add Book</a>
+                <a href="https://brs-bookmaniac-login.auth.us-east-1.amazoncognito.com/login?client_id=5anmt25o8cqml90jui8s52k27t&response_type=token&scope=email+openid+phone&redirect_uri=https%3A%2F%2Fbookmaniac-bucket.s3.amazonaws.com%2Fview_book.html " onclick="alert('Logout successfully')">Logout</a>
+            </div>
+        </div>
+    </div>
+    <div class="container mt-5 pt-5" style="padding-top: 40rem !important">
+        <div class="row justify-content-center">
+            <div class="col-md-14">
+                <div class="view-box">
+                    <h2 class="text-center mb-4 view-book-heading">Books Collection</h2>
+                    <div class="row" id="book-card">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    $(document).ready(function () {
+        // Intercept form submission
+   
+            // Make AJAX POST request
+            const urlFragment = window.location.hash.substring(1);
+            //console.log("Benixon");
+            const urlParams = new URLSearchParams(urlFragment);
+            const id_token = urlParams.get('id_token');
+            console.log(id_token, "hellllllllll")
+            $.ajax({
+                type: "GET",
+                url: "https://03gpyl7xs6.execute-api.us-east-1.amazonaws.com/test_stage/bookmaniac/read",  // Adjust the URL accordingly
+                contentType: "application/json",
+                success: function (response) {
+                    if (response.statusCode == 200) {
+                        var items = JSON.parse(response.body); 
+                        var dataContainer = document.getElementById('book-card');
+                        dataContainer.innerHTML = '';    
+                        var images = ["Images/book1.jpg", "Images/book2.jpg", "Images/book3.jpg","Images/book4.jpg", "Images/book5.jpg", "Images/book6.jpg", "Images/book7.jpg", "Images/book8.jpg", "Images/book9.jpg", "Images/book10.jpg", "Images/book11.jpg", "Images/book12.jpg", "Images/book13.jpg", "Images/book14.jpg", "Images/book15.jpg", "Images/book16.jpg" ];
+                        var imageIndex = 0;
+
+                        for (var i = 0; i < items.length; i += 16) {
+                            var row = document.createElement('div');
+                            row.classList.add('row');
+
+                            // Create columns for each item in the current row
+                            for (var j = i; j < Math.min(i + 16, items.length); j++) {
+                                var itemData = items[j];
+                                var col = document.createElement('div');
+                                col.classList.add('col-md-4');
+                                col.innerHTML = '<div class="card">' +
+                                    '<img src="' + images[imageIndex] + '" alt="Book Image" class="card-img-top book-img">' + // Set class for fixed size
+                                    '<div class="card-body">' +
+                                    '<h5 class="card-title">' + itemData.Title + '</h5>' +
+                                    '<p class="card-text">Author: ' + itemData.Authors + '</p>' +
+                                    '<p class="card-text">Publisher: ' + itemData.Publisher + '</p>' +
+                                    '<p class="card-text">Year: ' + itemData.Years + '</p>' +
+                                    '<a href="edit_book.html?book=' + encodeURIComponent(JSON.stringify(itemData)) + '" class="btn btn-primary btn-sm edit-btn">Edit</a>' +
+                                    '<a id="deleteItem" class="btn btn-danger btn-sm delete-btn" data-set="' + itemData.Title + '">Delete</a>' +
+                                    '</div></div>';
+                                row.appendChild(col);
+
+                                // Increment imageIndex and reset to 0 if it exceeds the length of the images array
+                                imageIndex = (imageIndex + 1) % images.length;
+                            }
+                            // Append the row to the container
+                            dataContainer.appendChild(row);
+                        } 
+
+                    } else {
+                        console.error("Unable to fetch data from DynamoDB. Error:", response);
+                    }
+                },
+                error: function (error) {
+                    console.error("Error:", error);
+                }
+            });   
+
+    });
+
+    $(document).on('click', '#deleteItem', async function() {
+    var dataSetValue = $(this).data('set');
+    console.log(dataSetValue)
+    const urlFragment = window.location.hash.substring(1);
+    //console.log("Benixon");
+    const urlParams = new URLSearchParams(urlFragment);
+    const id_token = urlParams.get('id_token');
+
+    var token = 'eyJraWQiOiJSVEZONVQ0cU92TXpWQ2tQNUM1emFcL0RFYUhvbnBZMTFNbm5QVWhhNGQzOD0iLCJhbGciOiJSUzI1NiJ9'
+    console.log(token,"ssssssssss");
+    try {   
+        // const response = await axios.delete('https://03gpyl7xs6.execute-api.us-east-1.amazonaws.com/test_stage/bookmaniac/delete', {
+        //     headers: {
+        //         'Authorization': token,
+        //         'Content-Type': 'application/json'
+        //     },
+        //     data: {
+        //         title: dataSetValue
+        //     }
+        // });
+
+        // if (response.statusCode) {
+        //     alert("Successfully Deleted the Book");
+        // } else {
+        //     console.error("Unable to delete book. Error:", response);
+        // }
+    } catch (error) {
+        console.error("Error:", error);
+    }
+});
+
+
+</script>
+</body>
+</html>

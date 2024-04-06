@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Books</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="styles.css"> <!-- Link to your custom CSS file for additional styling -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.966.0.min.js"></script>
+    <style>
+        .header {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .menu-tab {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-logo img {
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        .menu-logo h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: transparent;
+            background-image: url('Images/loginbk.webp');
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .view-box {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+            max-width: 1200px;
+            width: 100%;
+            margin: 1200px auto 20px;
+            /* Added extra margin to the top */
+        }
+
+        .view-book-heading {
+            font-weight: bold;
+        }
+
+        .book-card {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .book-img {
+            max-height: 150px;
+            width: auto;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .book-details {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            background-color: #f8f9fa;
+        }
+
+        .book-title {
+            font-weight: bold;
+        }
+
+        .edit-btn,
+        .delete-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.75rem;
+            width: 60px;
+            padding: 0.2rem 0.5rem;
+        }
+
+        .edit-btn {
+            right: calc(10px + 70px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="container-fluid menu-tab">
+            <div class="menu-logo">
+                <img src="Images/icon.png" alt="Logo">
+                <h1>Bookmaniac</h1>
+            </div>
+            <div>
+                <a href="add_book.html">Add Book</a>
+                <a href="login.html">Logout</a>
+            </div>
+        </div>
+    </div>
+    <div class="container mt-5 pt-5" style="padding-top: 40rem !important">
+        <div class="row justify-content-center">
+            <div class="col-md-14">
+                <div class="view-box">
+                    <h2 class="text-center mb-4 view-book-heading">Books Collection</h2>
+                    <div class="row" id="book-card">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Initialize AWS SDK
+        AWS.config.update({
+            region: 'us-east-1', // Replace with your AWS region
+            accessKeyId: 'ASIAZQ3DTSY23QMBQA3C', // Replace with your AWS access key ID
+            secretAccessKey: 'B4VINZRLNDgXNHeaSZcIOZ32OE6NxgEtq2MOKBLe', // Replace with your AWS secret access key,
+            sessionToken: 'FwoGZXIvYXdzEKL//////////wEaDADnXmAHM7IVXy7n2iK+AcSHeMBqR4Xk2pM/ZiauElYib3AVlcvy022aR76KpOHSlpkJgpNKKHwhuYs3cc74rW/YNM2GXkvzMR4xaqagGyCxvj7y99IY3RAWOuqAXjU1yvEM3Dsv1QrsXZ6g1lqoZvhC96jqa4Ii5xvebHjfHDjeqkCP2WQ7uieNSgj7asVT6LSC/Yd+X5Q8Y+1LVfHI5xLcn7pQ3BIO2S2SEKvalXBFxP9ePpioF000sYoZtXIGAyP2UzGBNATw9z6d0qYov/2LsAYyLUEnn2wKw6ccU8rLe8C2a8DyUBlX5IVvoOQakZpx/IIenYZFpIO0sB8DCoblHQ=='
+        });
+
+        // Create DynamoDB client
+        var dynamodb = new AWS.DynamoDB();
+
+        // Define DynamoDB params
+        var params = {
+            TableName: 'bookmaniac-db' // Replace with your DynamoDB table name
+        };
+
+        function fetchData() {
+            dynamodb.scan(params, function (err, data) {
+                if (err) {
+                    console.error("Unable to fetch data from DynamoDB. Error:", err);
+                } else {
+                    // Clear previous data
+                    var dataContainer = document.getElementById('book-card');
+                    dataContainer.innerHTML = '';
+
+                    // Loop through fetched items and create HTML for each
+                    var items = data.Items.map(item => AWS.DynamoDB.Converter.unmarshall(item));
+                    for (var i = 0; i < items.length; i += 3) {
+                        var row = document.createElement('div');
+                        row.classList.add('row');
+
+                        // Create columns for each item in the current row
+                        for (var j = i; j < Math.min(i + 3, items.length); j++) {
+                            var itemData = items[j];
+                            var col = document.createElement('div');
+                            col.classList.add('col-md-4');
+                            col.innerHTML = '<div class="card">' +
+                                '<img src="Images/book.jpg" alt="Book Image" class="card-img-top">' +
+                                '<div class="card-body">' +
+                                '<h5 class="card-title">' + itemData.Title + '</h5>' +
+                                '<p class="card-text">Author: ' + itemData.Authors + '</p>' +
+                                '<p class="card-text">Publisher: ' + itemData.Publisher + '</p>' +
+                                '<p class="card-text">Year: ' + itemData.Year + '</p>' +
+                                '<a href="edit_book.html?title=' + encodeURIComponent(itemData.Title) + '" class="btn btn-primary btn-sm edit-btn">Edit</a>' +
+                                '<a href="delete_book.html" class="btn btn-danger btn-sm delete-btn">Delete</a>' +
+                                '</div></div>';
+                            row.appendChild(col);
+                        }
+
+                        // Append the row to the container
+                        dataContainer.appendChild(row);
+                    }
+
+                    // Scroll to the top of the page
+                    window.scrollTo(0, 0);
+                }
+            });
+        }
+        // Call fetchData function
+        fetchData();
+
+    </script>
+
+</body>
+
+</html>
